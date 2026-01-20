@@ -1,9 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
-import connectDB from "./config/db";
-import bookingRoutes from "./routes/booking.routes";
-
 dotenv.config();
+import connectDB from "./config/db";
+import authRoutes from "./routes/auth.routes";
+import bookingRoutes from "./routes/booking.routes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,7 +14,11 @@ app.use(express.json());
 connectDB();
 
 // Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
+
+console.log("JWT_ACCESS_SECRET =", process.env.JWT_ACCESS_SECRET);
+console.log("JWT_REFRESH_SECRET =", process.env.JWT_REFRESH_SECRET);
 
 app.get("/", (_req, res) => {
   res.send("API running...");
