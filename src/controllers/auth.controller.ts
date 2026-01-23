@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
-import { 
-    registerUser, 
+import {
+    registerUser,
     loginUser,
     sendEmailLoginOTP,
     sendPhoneLoginOTP,
     verifyEmailLoginOTP,
     verifyPhoneLoginOTP
 } from "../auth/auth.service";
-import { 
-    registerSchema, 
+import {
+    registerSchema,
     loginSchema,
     loginEmailOTPSchema,
     loginPhoneOTPSchema,
@@ -26,7 +26,8 @@ export const register = async (req: Request, res: Response) => {
             user: {
                 id: user._id,
                 name: user.name,
-                email: user.email
+                phone: user.phone,
+                email: user.email,
             }
         });
     } catch (error: any) {
@@ -85,7 +86,7 @@ export const sendPhoneOTP = async (req: Request, res: Response) => {
 export const verifyEmailLogin = async (req: Request, res: Response) => {
     try {
         console.log("📧 Verify Email Login Request:", req.body);
-        
+
         verifyLoginOTPSchema.parse(req.body);
 
         if (!req.body.email) {

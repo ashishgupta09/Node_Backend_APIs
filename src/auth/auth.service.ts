@@ -110,27 +110,33 @@ export const sendEmailLoginOTP = async (email: string) => {
 };
 
 /**
- * Send OTP for Phone Login
+ * Send OTP for Phone Login (Twilio)
  */
 export const sendPhoneLoginOTP = async (phone: string) => {
+    // ✅ Ensure E.164 format
+    if (!phone.startsWith("+")) {
+        throw new Error(
+            "Phone number must include country code (e.g. +919876543210)"
+        );
+    }
+
     const user = await User.findOne({ phone });
     if (!user) {
         throw new Error("User not found");
     }
 
     const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     user.phoneOTP = otp;
-    user.otpExpiry = otpExpiry;
+    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    // Send OTP via SMS
+    // ✅ Twilio requires +<countrycode><number>
     await sendSmsOTP(phone, otp);
 
     return {
         message: "OTP sent to phone successfully",
-        phone: phone
+        phone
     };
 };
 
