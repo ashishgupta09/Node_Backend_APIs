@@ -1,5 +1,5 @@
-import { RegisterDTO } from "src/models/auth.types";
-import { User } from "../models/user.js";
+import { RegisterDTO } from "../models/auth.types";
+import { User } from "../models/user";
 import { hashPassword, comparePassword } from "../utils/password";
 import {
     generateAccessToken,
@@ -7,12 +7,44 @@ import {
 } from "../utils/token";
 import { sendOTPEmail } from "../utils/email";
 import { sendSmsOTP } from "../utils/sms";
+import { IUser } from "../models/user";
 
 /**
  * Generate 6-digit OTP
  */
 const generateOTP = (): string => {
     return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+/**
+ * Shared helper: generate tokens + return auth response
+ */
+const generateAuthResponse = async (user: IUser) => {
+    const userId = user._id.toString();
+
+    const accessToken = generateAccessToken({
+        id: userId,
+        role: user.role
+    });
+
+    const refreshToken = generateRefreshToken({
+        id: userId
+    });
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    return {
+        accessToken,
+        refreshToken,
+        user: {
+            id: userId,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            role: user.role
+        }
+    };
 };
 
 /**
@@ -57,31 +89,7 @@ export const loginUser = async (
         throw new Error("Invalid email or password");
     }
 
-    // ✅ Convert ObjectId → string (CORRECT)
-    const userId = user._id.toString();
-
-    const accessToken = generateAccessToken({
-        id: userId,
-        role: user.role
-    });
-
-    const refreshToken = generateRefreshToken({
-        id: userId
-    });
-
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    return {
-        accessToken,
-        refreshToken,
-        user: {
-            id: userId,
-            name: user.name,
-            email: user.email,
-            role: user.role
-        }
-    };
+    return generateAuthResponse(user);
 };
 
 /**
@@ -157,32 +165,11 @@ export const verifyEmailLoginOTP = async (email: string, otp: string) => {
         throw new Error("OTP expired");
     }
 
-    const userId = user._id.toString();
-
-    const accessToken = generateAccessToken({
-        id: userId,
-        role: user.role
-    });
-
-    const refreshToken = generateRefreshToken({
-        id: userId
-    });
-
-    user.refreshToken = refreshToken;
+    // Clear OTP fields before generating tokens
     user.emailOTP = undefined;
     user.otpExpiry = undefined;
-    await user.save();
 
-    return {
-        accessToken,
-        refreshToken,
-        user: {
-            id: userId,
-            name: user.name,
-            email: user.email,
-            role: user.role
-        }
-    };
+    return generateAuthResponse(user);
 };
 
 /**
@@ -202,30 +189,9 @@ export const verifyPhoneLoginOTP = async (phone: string, otp: string) => {
         throw new Error("OTP expired");
     }
 
-    const userId = user._id.toString();
-
-    const accessToken = generateAccessToken({
-        id: userId,
-        role: user.role
-    });
-
-    const refreshToken = generateRefreshToken({
-        id: userId
-    });
-
-    user.refreshToken = refreshToken;
+    // Clear OTP fields before generating tokens
     user.phoneOTP = undefined;
     user.otpExpiry = undefined;
-    await user.save();
 
-    return {
-        accessToken,
-        refreshToken,
-        user: {
-            id: userId,
-            name: user.name,
-            phone: user.phone,
-            role: user.role
-        }
-    };
+    return generateAuthResponse(user);
 };

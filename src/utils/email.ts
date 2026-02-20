@@ -1,11 +1,5 @@
 import nodemailer from "nodemailer";
 
-// Log configuration on startup
-console.log("📧 Email Configuration Loaded:");
-console.log("HOST:", process.env.EMAIL_HOST);
-console.log("PORT:", process.env.EMAIL_PORT);
-console.log("USER:", process.env.EMAIL_USER);
-
 /**
  * Create transporter dynamically to ensure .env is loaded
  */

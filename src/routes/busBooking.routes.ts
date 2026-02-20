@@ -33,50 +33,37 @@ const router = Router();
 // User Routes
 router.get("/GetAllUsers", getAllUsers);
 router.post("/AddNewUser", addNewUser);
-router.post("/UpdateUser", updateUser);
-router.delete("/DeleteUserByUserId", deleteUserByUserId);
+router.put("/UpdateUser", updateUser);
 router.delete("/DeleteUserByUserId/:id", deleteUserByUserId);
 
 // Vendor Routes
 router.post("/CreateVendor", createVendor);
 router.get("/GetBusVendors", getBusVendors);
-router.get("/GetBusVendorsById", getBusVendorsById);
 router.get("/GetBusVendorsById/:id", getBusVendorsById);
-router.put("/PutBusVendors", updateVendor);
-router.post("/PostBusVendor", createVendor);
-router.delete("/DeleteBusVendor", deleteBusVendor);
+router.put("/UpdateBusVendor", updateVendor);
 router.delete("/DeleteBusVendor/:id", deleteBusVendor);
 
 // Location Routes
 router.get("/GetBusLocations", getBusLocations);
-router.get("/GetBusLocationById", getBusLocationById);
 router.get("/GetBusLocationById/:id", getBusLocationById);
-router.get("/getAddressByLocationId", getAddressByLocationId);
-router.get("/getAddressByLocationId/:id", getAddressByLocationId);
-router.post("/PostBusLocationAddress", updateBusLocation);
-router.put("/PutBusLocation", updateBusLocation);
+router.get("/GetAddressByLocationId/:id", getAddressByLocationId);
 router.post("/PostBusLocation", postBusLocation);
-router.delete("/DeleteBusLocation", deleteBusLocation);
+router.put("/UpdateBusLocation", updateBusLocation);
 router.delete("/DeleteBusLocation/:id", deleteBusLocation);
 
 // Schedule Routes
 router.get("/GetBusSchedules", getBusSchedules);
-router.get("/searchBus", searchBus);
-router.get("/getBookedSeats", getBookedSeats);
-router.get("/searchBus2", searchBus);
-router.get("/GetBusScheduleById", getBusScheduleById);
 router.get("/GetBusScheduleById/:id", getBusScheduleById);
-router.put("/PutBusSchedule", updateBusSchedule);
+router.get("/SearchBus", searchBus);
+router.get("/GetBookedSeats", getBookedSeats);
 router.post("/PostBusSchedule", postBusSchedule);
-router.delete("/DeleteBusSchedule", deleteBusSchedule);
+router.put("/UpdateBusSchedule", updateBusSchedule);
 router.delete("/DeleteBusSchedule/:id", deleteBusSchedule);
 
 // Booking Routes
 router.get("/GetAllBusBookings", getAllBusBookings);
-router.get("/GetBusBooking", getBusBooking);
 router.get("/GetBusBooking/:id", getBusBooking);
 router.post("/PostBusBooking", postBusBooking);
-router.delete("/DeleteBusBooking", deleteBusBooking);
 router.delete("/DeleteBusBooking/:id", deleteBusBooking);
 
 export default router;
