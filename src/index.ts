@@ -5,6 +5,7 @@ import connectDB from "./config/db";
 import authRoutes from "./routes/auth.routes";
 import bookingRoutes from "./routes/booking.routes";
 import busBookingRoutes from "./routes/busBooking.routes";
+import userDataRoutes from "./routes/userData.routes";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.get("/", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/BusBooking", busBookingRoutes);
+app.use("/api/userData", userDataRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
