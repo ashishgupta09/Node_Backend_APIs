@@ -43,7 +43,7 @@ export const login = async (req: Request, res: Response) => {
             req.body.email,
             req.body.password
         );
-
+        
         res.json(result);
     } catch (error: any) {
         res.status(400).json({ error: error.message });

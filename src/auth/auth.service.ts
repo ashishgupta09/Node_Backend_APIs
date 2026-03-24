@@ -36,6 +36,7 @@ const generateAuthResponse = async (user: IUser) => {
 
     return {
         accessToken,
+        token: accessToken, // Alias for backward compatibility/frontend expectation
         refreshToken,
         user: {
             id: userId,
