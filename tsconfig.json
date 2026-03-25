@@ -13,11 +13,10 @@
 
 {
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "module": "ESNext",
     "target": "ES2020",
-    "moduleResolution": "Node",
+    "module": "CommonJS",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "esModuleInterop": true,
     "strict": true
   }
