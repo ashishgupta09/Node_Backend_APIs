@@ -6,8 +6,10 @@ import {
     sendEmailOTP,
     sendPhoneOTP,
     verifyEmailLogin,
-    verifyPhoneLogin
+    verifyPhoneLogin,
+    getProfile
 } from "./../controllers/auth.controller";
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -21,5 +23,8 @@ router.post("/login/email/verify-otp", verifyEmailLogin);
 // OTP Login with Phone
 router.post("/login/phone/send-otp", sendPhoneOTP);
 router.post("/login/phone/verify-otp", verifyPhoneLogin);
+
+// Protected Routes (For frontend to verify role)
+router.get("/profile", authenticate, getProfile);
 
 export default router;

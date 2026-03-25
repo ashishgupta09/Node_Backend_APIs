@@ -63,7 +63,8 @@ export const registerUser = async (data: RegisterDTO) => {
         name: data.name,
         email: data.email,
         phone: data.phone,
-        password: hashedPassword
+        password: hashedPassword,
+        role: data.role || "USER"
     });
 
     return user;

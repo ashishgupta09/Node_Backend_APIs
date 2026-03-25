@@ -15,7 +15,8 @@ export const registerSchema = z.object({
         (val) => phoneRegex.test(val),
         { message: "Invalid phone number" }
     ).optional(),
-    password: z.string().min(8)
+    password: z.string().min(8),
+    role: z.enum(["USER", "ADMIN", "MANAGER"]).optional()
 });
 
 export const loginSchema = z.object({

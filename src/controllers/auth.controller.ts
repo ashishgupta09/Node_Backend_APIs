@@ -7,6 +7,7 @@ import {
     verifyEmailLoginOTP,
     verifyPhoneLoginOTP
 } from "../auth/auth.service";
+import { User } from "../models/user";
 import {
     registerSchema,
     loginSchema,
@@ -28,6 +29,7 @@ export const register = async (req: Request, res: Response) => {
                 name: user.name,
                 phone: user.phone,
                 email: user.email,
+                role: user.role
             }
         });
     } catch (error: any) {
@@ -125,5 +127,31 @@ export const verifyPhoneLogin = async (req: Request, res: Response) => {
         res.json(result);
     } catch (error: any) {
         res.status(400).json({ error: error.message });
+    }
+};
+
+/**
+ * Get User Profile
+ */
+export const getProfile = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user.id;
+        const user = await User.findById(userId).select("-password");
+        
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        res.json({
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role
+            }
+        });
+    } catch (error: any) {
+        res.status(401).json({ error: "Unauthorized" });
     }
 };

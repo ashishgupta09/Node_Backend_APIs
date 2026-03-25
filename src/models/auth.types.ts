@@ -3,6 +3,7 @@ export interface RegisterDTO {
     email: string;
     phone?: string;
     password: string;
+    role?: "USER" | "ADMIN" | "MANAGER";
 }
 
 export interface LoginEmailOTPDTO {
