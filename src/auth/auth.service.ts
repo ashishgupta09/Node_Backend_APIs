@@ -1,5 +1,11 @@
-import { RegisterDTO } from "../models/auth.types";
-import { User } from "../models/user";
+export interface RegisterDTO {
+    name: string;
+    email: string;
+    phone?: string;
+    password: string;
+    role?: "USER" | "ADMIN" | "MANAGER";
+}
+import { prisma } from "../config/db";
 import { hashPassword, comparePassword } from "../utils/password";
 import {
     generateAccessToken,
@@ -7,7 +13,7 @@ import {
 } from "../utils/token";
 import { sendOTPEmail } from "../utils/email";
 import { sendSmsOTP } from "../utils/sms";
-import { IUser } from "../models/user";
+import { User } from "@prisma/client";
 
 /**
  * Generate 6-digit OTP
@@ -19,8 +25,8 @@ const generateOTP = (): string => {
 /**
  * Shared helper: generate tokens + return auth response
  */
-const generateAuthResponse = async (user: IUser) => {
-    const userId = user._id.toString();
+const generateAuthResponse = async (user: User) => {
+    const userId = user.id;
 
     const accessToken = generateAccessToken({
         id: userId,
@@ -31,8 +37,10 @@ const generateAuthResponse = async (user: IUser) => {
         id: userId
     });
 
-    user.refreshToken = refreshToken;
-    await user.save();
+    await prisma.user.update({
+        where: { id: userId },
+        data: { refreshToken }
+    });
 
     return {
         accessToken,
@@ -52,19 +60,21 @@ const generateAuthResponse = async (user: IUser) => {
  * Register User
  */
 export const registerUser = async (data: RegisterDTO) => {
-    const existingUser = await User.findOne({ email: data.email });
+    const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
     if (existingUser) {
         throw new Error("User already exists");
     }
 
     const hashedPassword = await hashPassword(data.password);
 
-    const user = await User.create({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        password: hashedPassword,
-        role: data.role || "USER"
+    const user = await prisma.user.create({
+        data: {
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            password: hashedPassword,
+            role: data.role || "USER"
+        }
     });
 
     return user;
@@ -77,7 +87,7 @@ export const loginUser = async (
     email: string,
     password: string
 ) => {
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
         throw new Error("Invalid email or password");
     }
@@ -98,7 +108,7 @@ export const loginUser = async (
  * Send OTP for Email Login
  */
 export const sendEmailLoginOTP = async (email: string) => {
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
         throw new Error("User not found");
     }
@@ -106,9 +116,13 @@ export const sendEmailLoginOTP = async (email: string) => {
     const otp = generateOTP();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    user.emailOTP = otp;
-    user.otpExpiry = otpExpiry;
-    await user.save();
+    await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            emailOTP: otp,
+            otpExpiry: otpExpiry
+        }
+    });
 
     // Send OTP via email
     await sendOTPEmail(email, otp);
@@ -130,16 +144,22 @@ export const sendPhoneLoginOTP = async (phone: string) => {
         );
     }
 
-    const user = await User.findOne({ phone });
+    // Prisma findFirst since phone might not be unique (though it usually is)
+    // Actually, in the Prisma schema I defined for User, phone is not unique but optional.
+    const user = await prisma.user.findFirst({ where: { phone } });
     if (!user) {
         throw new Error("User not found");
     }
 
     const otp = generateOTP();
 
-    user.phoneOTP = otp;
-    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-    await user.save();
+    await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            phoneOTP: otp,
+            otpExpiry: new Date(Date.now() + 10 * 60 * 1000)
+        }
+    });
 
     // ✅ Twilio requires +<countrycode><number>
     await sendSmsOTP(phone, otp);
@@ -154,7 +174,7 @@ export const sendPhoneLoginOTP = async (phone: string) => {
  * Verify OTP and Login with Email
  */
 export const verifyEmailLoginOTP = async (email: string, otp: string) => {
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
         throw new Error("User not found");
     }
@@ -168,17 +188,22 @@ export const verifyEmailLoginOTP = async (email: string, otp: string) => {
     }
 
     // Clear OTP fields before generating tokens
-    user.emailOTP = undefined;
-    user.otpExpiry = undefined;
+    const updatedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            emailOTP: null,
+            otpExpiry: null
+        }
+    });
 
-    return generateAuthResponse(user);
+    return generateAuthResponse(updatedUser);
 };
 
 /**
  * Verify OTP and Login with Phone
  */
 export const verifyPhoneLoginOTP = async (phone: string, otp: string) => {
-    const user = await User.findOne({ phone });
+    const user = await prisma.user.findFirst({ where: { phone } });
     if (!user) {
         throw new Error("User not found");
     }
@@ -192,8 +217,13 @@ export const verifyPhoneLoginOTP = async (phone: string, otp: string) => {
     }
 
     // Clear OTP fields before generating tokens
-    user.phoneOTP = undefined;
-    user.otpExpiry = undefined;
+    const updatedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            phoneOTP: null,
+            otpExpiry: null
+        }
+    });
 
-    return generateAuthResponse(user);
+    return generateAuthResponse(updatedUser);
 };

@@ -7,7 +7,7 @@ import {
     verifyEmailLoginOTP,
     verifyPhoneLoginOTP
 } from "../auth/auth.service";
-import { User } from "../models/user";
+import { prisma } from "../config/db";
 import {
     registerSchema,
     loginSchema,
@@ -25,7 +25,7 @@ export const register = async (req: Request, res: Response) => {
         res.status(201).json({
             message: "User registered successfully",
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 phone: user.phone,
                 email: user.email,
@@ -136,7 +136,9 @@ export const verifyPhoneLogin = async (req: Request, res: Response) => {
 export const getProfile = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user.id;
-        const user = await User.findById(userId).select("-password");
+        const user = await prisma.user.findUnique({
+            where: { id: userId }
+        });
         
         if (!user) {
             throw new Error("User not found");
@@ -144,7 +146,7 @@ export const getProfile = async (req: Request, res: Response) => {
 
         res.json({
             user: {
-                id: user._id,
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 phone: user.phone,

@@ -20,7 +20,9 @@ app.use(cors({
 app.use(express.json());
 
 // DB
-connectDB();
+connectDB().then(() => {
+  console.log("✅ Database initialized");
+});
 
 // Health check
 app.get("/", (_req, res) => {
